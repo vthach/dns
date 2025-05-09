@@ -1,0 +1,58 @@
+services:
+  dns-master:
+    image: ubuntu:latest
+    container_name: dns-master
+    hostname: dns-master
+    networks:
+      dns-net:
+        ipv4_address: 172.28.1.10
+    volumes:
+      - ./named.conf.master:/etc/bind/named.conf
+      - ./named.conf.options:/etc/bind/named.conf.options
+      - ./db.example.com:/var/lib/bind/db.example.com
+      - ./db.1.168.192.in-addr.arpa:/var/lib/bind/db.1.168.192.in-addr.arpa
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    command: bash -c "apt-get update && 
+      apt-get install -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confnew' -y bind9 dnsutils bind9-doc && 
+      /usr/sbin/named -g -c /etc/bind/named.conf -u bind"
+
+  dns-slave:
+    image: ubuntu:latest
+    container_name: dns-slave
+    hostname: dns-slave
+    networks:
+      dns-net:
+        ipv4_address: 172.28.1.11
+    volumes:
+      - ./named.conf.slave:/etc/bind/named.conf
+      - ./named.conf.options:/etc/bind/named.conf.options
+    ports:
+      - "5353:53/tcp" # Expose on a different host port to avoid conflict with master
+      - "5353:53/udp" # Expose on a different host port to avoid conflict with master
+    command: bash -c "apt-get update && 
+      apt-get install -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confnew' -y bind9 dnsutils bind9-doc && 
+      /usr/sbin/named -g -c /etc/bind/named.conf -u bind"
+    depends_on:
+      - dns-master
+
+  dns-client:
+    image: ubuntu:latest
+    container_name: dns-client
+    hostname: dns-client
+    networks:
+      dns-net:
+        ipv4_address: 172.28.1.12
+    depends_on:
+      - dns-master
+      - dns-slave
+ 
+    command: bash -c "apt-get update && apt-get install -y dnsutils inetutils-ping && sleep infinity"
+
+networks:
+  dns-net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.1.0/24

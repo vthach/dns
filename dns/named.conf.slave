@@ -1,0 +1,17 @@
+options {
+    directory "/var/lib/bind";
+    allow-query { any; };
+    forwarders { };
+};
+
+zone "example.com" IN {
+    type slave;
+    masters { 172.28.1.10; }; // IP address of the master server
+    file "/var/lib/bind/db.example.com";
+};
+
+zone "1.168.192.in-addr.arpa" IN {
+    type slave;
+    masters { 172.28.1.10; }; // IP address of the master server
+    file "/var/lib/bind/db.1.168.192.in-addr.arpa";
+};

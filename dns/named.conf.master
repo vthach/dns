@@ -1,0 +1,19 @@
+acl homelab { 172.24.0.0/16; };
+
+options {
+    directory "/var/lib/bind";
+    allow-query { any; };
+    forwarders { };
+};
+
+zone "example.com" IN {
+    type master;
+    file "/var/lib/bind/db.example.com";
+    allow-transfer { 172.28.1.11; homelab; }; // Allow zone transfers to the slave
+};
+
+zone "1.168.192.in-addr.arpa" IN {
+    type master;
+    file "/var/lib/bind/db.1.168.192.in-addr.arpa";
+    allow-transfer { 172.28.1.11; homelab; localnets; }; // Allow zone transfers to the slave
+};
