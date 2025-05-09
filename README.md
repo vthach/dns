@@ -174,10 +174,9 @@ To stop/start all containers:
  docker-compose up -d
  ```
 
- Startup a selected to debug:
-    `docker-compose up dns-master`
- To attach to the shell:
-     `docker exec -it dns-master bash`
+ Startup a selected container to debug:`docker-compose up dns-master`
+ 
+ To attach to the shell: `docker exec -it dns-master bash`
 
  To look at the run log:
  ```sh
